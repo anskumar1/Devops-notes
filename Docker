@@ -1,0 +1,193 @@
+Docker
+
+
+
+Launch AWS linux >> key pair Anshu >>  cd Documents
+
+
+
+AWS linux setup   1  awscli
+    2  aws configure
+               AKIAQ3E
+hT53ad9Cswz8gYVd
+
+    3  aws s3 ls
+    4  aws --version
+    6  sudo yum install docker
+    7  docker pull ubuntu
+    8  docker start
+    9  sudo docker start.  Wrong command
+   10  sudo yum update -y
+   11  sudo service docker start
+   12  sudo service docker status
+   13  docker --version
+   14  sudo usermod -aG docker $USER
+   15  docker pull ubuntu
+   16  sudo usermod -a -G docker ec2-user
+   17  docker pull ubuntu
+   18  sudo docker pull ubuntu
+   19  docker images
+   20  sudo docker images
+   21  sudo chown ec2-user /var/run/docker.sock
+   22  docker images
+   23  docker login        
+
+username :-      anskumar246          
+                 Password :- $24*******Ak
+
+++++++++++++++++++++++++++++++++++++++++++    +++++++++++++++++++++
+
+Docker images
+Docker pull alpine
+Docker rmi image _id
+Docker ps
+Docker ps -a
+Docker rmi $(docker images -q)
+Docker inspect image_id
+Docker run -d -p 9090:80 https:latest
+Docker container prune
+
+ docker images
+docker pull
+docker run
+docker stop <container id>
+docker start <container id>
+docker stop
+docker restart
+docker build -t 
+docker rmi imageid
+docker rmi $(docker images -q)
+docker ps
+docker ps -a
+docker ps -aq
+docker rm containerid
+docker rm $(docker ps -aq)  +++++++++++++++++++++ 
+docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+ubuntu       latest    bf3dc08bfed0   2 weeks ago   76.2MB
+
+
+[ec2-user@ip-172-31-27-17 ~]$ docker run -itd --name anshu1 bf3dc08bfed0
+de66be47b14653d9f45bfb456cc9fc34ef51645bd7c35bc657cf9420f01cc39e
+
+docker attach de66be4
+docker exec de66be47b1 ls
+
+Vi Dockerfile
+++++++++++++++++++++++++++++++++++++++++
+FROM ubuntu:16.04
+LABEL maintainer='Anshu'
+ 
+RUN apt-get update -y
+RUN apt-get install apache2 -y
+RUN apt-get install wget -y
+RUN apt-get install unzip -y
+WORKDIR /tmp
+RUN wget https://github.com/javahometech/javahome-app/archive/refs/heads/master.zip 
+RUN unzip master.zip
+#Apache deployment directory is /var/www/html
+RUN cp -r javahome-app-master/* /var/www/html/
+EXPOSE 80
+CMD ["apachectl", "-D", "FOREGROUND"]
+++++++++++++++++++++++++++++++++++++++++++++
+
+docker build -t anskumar246/pacman
+
+[ec2-user@ip-172-31-27-17 ~]$ docker images
+REPOSITORY           TAG       IMAGE ID       CREATED         SIZE
+anskumar246/pacman   latest    3e0683cbc04f   5 minutes ago   270MB
+
+docker build -t anskumar246/pacman . ( automatically tagged with latest)
+docker build -t anskumar246/pacman:1.0.0 .
+
+
+docker run -d -p 8082:80 anskumar246/pacman
+Open port 8082 in the security groups of the EC2.
+
+ +++++++++++++++++++++
+Three Tier application +++++++++++++++++++++
+
+Github >> Git clone >> frontend, backend, mongoDB >> Create image >> push to ECR >> create K8s cluster >> create INGRESS >>  create ALB >> expose to user
+
+1.> launch an ubuntu instnace ( allow port 80,22,3000,443). Also configure AWS cli on yoiur machine in your home directory on ubuntu (for amazon linux, aws cli is already installed).
+    create IAM user and assign admin access for this project
+     create access key and secret access key
+     aws configure
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo apt install unzip
+unzip awscliv2.zip
+sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin --update
+aws configure
+
+2.> git clone https://github.com/LondheShubham153/TWSThreeTierAppChallenge.git   AP-76XMD6RMBP:frontend anshu.kumar$ pwd
+/Users/anshu.kumar/Projects/Practice/TWSThreeTierAppChallenge/Application-Code/frontend 
+3.> Write Dockerfile
+                Dockerfile
+FROM node:14
+WORKDIR app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD [“npm”,”start”]
+
+4.> Docker is not installed in your system, install docker
+         sudo apt-get update
+          sudo apt install docker.io
+5.> sudo usermod -aG docker $USER ( sudo chown $USER /var/run/docker.sock)
+6.> docker —version or docker ps :- to check docker is running ( start docker if not running)
+7.> Build docker image out of your Dockerfile :- docker build -t —name Three-Tier-Application .
+8.> docker images
+9.> docker run -d -p 3000:3000 Three-Tier-Application:latest
+10.> check on browser <ipaddress:3000> if your application is running or not
+11.> open AWS ECR >> create public repo >> name :- three-tier-frontend
+12.> view push command >> run the respective four commands (ECR login, Image Build, image tag, image push)
+13.> Follow the same steps to create image for backend and push it on ECR backend repo
+14.> We will create cluster on EKS
+15.> Install eksctl and kubectl tool
+       Install kubectl
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin
+kubectl version --short --client
+         Install eksctl
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+        Setup EKS Cluster
+eksctl create cluster --name three-tier-cluster --region us-west-2 --node-type t2.medium --nodes-min 2 --nodes-max 2
+aws eks update-kubeconfig --region us-west-2 --name three-tier-cluster
+kubectl get nodes
+         Run Manifests
+kubectl create namespace workshop
+kubectl apply -f . (kubectl apply -f secrets.yaml, kubectl apply -f deployment.yaml and kubectl apply -f service.yaml)
+kubectl get svc -n workshop
+kubectl delete -f .
+16.> we have taken t2.medium worker node while creating eks cluster with min=2 and max=2 nodes, it will take 10-15 mins to create cluster
+17.> AWS EKS >> us-west-2 >> three-tier-cluster >> compute  ( create context using second command in setup EKS cluster)
+18.> Now we will create k8s manifest files
+19.> We will create deployment.yaml, service.yaml and secret.yaml for backend, frontend and database.
+20.> base 64 encoding for storing secret in secret.yaml file.
+        echo ‘anshu’ | base64
+        4oCYYW5zaHXigJkK
+21.> Run manifests step to deploy your Database first then Backend and then frontend.
+kubectl apply -f secrets.yaml, kubectl apply -f deployment.yaml and kubectl apply -f service.yaml
+kubectl apply -f backend-secrets.yaml, kubectl apply -f backend-deployment.yaml and kubectl apply -f backend-service.yaml
+kubectl apply -f frontend-deployment.yaml and kubectl apply -f frontend-service.yaml
+
+Kubectl logs <pod-name> -n workspace
+
+22.> Now we will create INGRESS controller for accessing our frontend from the outside world.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
