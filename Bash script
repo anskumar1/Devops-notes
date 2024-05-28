@@ -1,0 +1,41 @@
+
+Archiving the large file size
+
+
+touch archive_project.sh
+vi archive_project.sh
+chmod a+x archive_project.sh
+
+
+#!/bin/bash
+
+BASE_Path = /home/ec2-users/scripts/
+DEPTH=1
+RUN=0
+
+# Check if the directory is present or not
+if [ ! -d $BASE ]
+then 
+    Echo “directory doen’t exists, $BASE”
+   Exit 1
+fi
+
+if [ ! -d $BASE/archieve ]
+then 
+      mkdir $BASE/archieve
+fi
+
+# find the listv of file older than 20 MB
+for i in 'find $BASE -maxdepth $DEPTH -type f -size +20M'
+do
+        if [ $RUN -eq 0]
+        then
+             gzip $i || exit 1
+             mv $i.gz $BASE/arhieve || exit 1
+        fi
+done
+
+# create a crotab job 
+# crontab -e
+# 05 01 * * * /home/ec2-user/archive_project.sh
+
